@@ -1,13 +1,13 @@
 //---------------------------------------------------------------
 // Name: Ren's String Library
 //
-// Light weight string library
-// It is meant to be standalong, not relying on STL
-// Computation speed may be sacrificed for minimal code size
+// A standalone string class not relying on STL.
+// Speed may be sacrificed for code size and readibility, but I've
+// also included some assembly optimizations which may speed things up.
 //
 // Using id's string library as inspiration
 //
-// This file contains MMX optimized functions
+// This file contains MMX assembly methods
 //---------------------------------------------------------------
 #include "Str.h"
 
@@ -33,7 +33,7 @@ void rStr::fill_mmx(const char c)
 	__asm emms
 }
 
-//TODO: Use MMX operators like movq
+//This doesn't seem to work when dst has data in it, garg!
 void rStr::r_memset_gran_mmx(const char* dst, const char c, const int count)
 {
 	int l = count;

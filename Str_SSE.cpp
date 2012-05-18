@@ -1,13 +1,13 @@
 //---------------------------------------------------------------
 // Name: Ren's String Library
 //
-// Light weight string library
-// It is meant to be standalong, not relying on STL
-// Computation speed may be sacrificed for minimal code size
+// A standalone string class not relying on STL.
+// Speed may be sacrificed for code size and readibility, but I've
+// also included some assembly optimizations which may speed things up.
 //
 // Using id's string library as inspiration
 //
-// This file contains SSE optimized functions
+// This file contains SSE assembly methods
 //---------------------------------------------------------------
 #include "Str.h"
 

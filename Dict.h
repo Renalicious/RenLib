@@ -1,5 +1,5 @@
 //---------------------------------------------------------------
-// Name: Ren's string dictionary library
+// Name: Ren's dictionary library
 //
 // Light weight string dictionary library, uses strings for both keys and values
 // It is meant to be standalong, not relying on STL
@@ -8,6 +8,18 @@
 // This dictionary is a container of two lists: keys-values
 // Keys are always unique, right now they can be anything... so that may change. 
 //---------------------------------------------------------------
+
+/*
+	Changes and versions:
+	Version 1.0.0 - May 2012: initial release
+*/
+
+#ifndef _RENDICT_
+#define _RENDICT_
+
+#ifndef NULL
+#define NULL = 0
+#endif
 
 const int _DEF_DICT_GRAN_ = 4;
 
@@ -44,6 +56,7 @@ public:
 	void			remove();												//Remove last key / val pair
 	void			removeKey(const key_t &key);							//Remove specific key
 	void			removePos(const int index);								//Remove specific index
+	void			setKey(const key_t &key, const val_t &val);				//Replace existing key / value, or add
 
 	//Locating data
 	const int		findKey(const key_t &key);								//Find index of key
@@ -348,6 +361,33 @@ void rDict<key_t, val_t>::removePos(const int index)
 
 	else
 		clear();
+}
+
+template<class key_t, class val_t>
+void rDict<key_t, val_t>::setKey(const key_t &key, const val_t &val)
+{
+	int pos;
+
+	if(!num)
+		ensureAlloced(num + 1, false);
+
+	ensureAlloced(num + 1, true);
+	pos = findKey(key);
+
+	//If we're replacing an existing key
+	if(pos >= 0)
+	{
+		kList[pos] = key;
+		vList[pos] = val;
+	}
+
+	//If we can't find a match, append
+	else
+	{
+		append(key, val);
+	}
+
+	num++;
 }
 
 //-------------------------------------------
@@ -705,3 +745,5 @@ bool operator==(const rDict<key_t, val_t> &dict1, const rDict<key_t, val_t> &dic
 	else
 		return false;
 }
+
+#endif

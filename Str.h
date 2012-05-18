@@ -1,25 +1,34 @@
 //---------------------------------------------------------------
 // Name: Ren's String Library
 //
-// Light weight string library
-// It is meant to be standalong, not relying on STL
-// Computation speed may be sacrificed for minimal code size
+// A standalone string class not relying on STL.
+// Speed may be sacrificed for code size and readibility, but I've
+// also included some assembly optimizations which may speed things up.
 //
 // Using id's string library as inspiration
 //
-// Preprocessor definitions based on available instruction sets
-// This should make it easier to speed things up if necessary
+// Preprocessor definitions based on available instruction sets:
 // Scalar, MMX, SSE, AVX
 //---------------------------------------------------------------
 
 /*
 	Changes and versions:
+	Version 1.0.1 - May 15 2012: +Added an int pointer as a return value for the split method,
+									This breaks the rules of functional programing, but it's much more convenient
+									getting the number of splits this way.
+
+								 +Added some 'fact code' optimizations to "r_memcopy_asm", by way of explicit loop lengths,
+									this will reduce the number of loop compares for long strings.
+
+								 +Fixed a crash bug in the split method where the chunkLength would end up 0.
+									Eg, splitting text with token '\n', on a line that only contained '\n'.
+
 	Version 1.0.0 - May 2012: initial release
 */
 
 #ifndef _RENSTR_
 #define _RENSTR_
-#define _RENSTR_VER_	"1.0.0"
+#define _RENSTR_VER_	"1.0.1"
 
 
 
@@ -147,9 +156,9 @@ public:
 	const char*	c_str(void) const;									//Return as char array
 	const char*	intToChar(const signed int n);						//Return int as char array
 	const char*	floatToChar(const float n, const int precision = 8);//Return float or double as rStr
-	rStr*		split(const char token);							//Split local text at token, return array
-	rStr*		split(const char* text, const char token);			//Split text at token, return array
-	rStr*		split(const rStr &text, const char token);			//Split text at token, return array
+	rStr*		split(const char token, int * _retVal);							//Split local text at token, return array
+	rStr*		split(const char* text, const char token, int * _retVal);			//Split text at token, return array
+	rStr*		split(const rStr &text, const char token, int * _retVal);			//Split text at token, return array
 
 	//--- Memory opperations
 	void				reAllocate(int amount, bool keepOld);		//Increase or decrease allocated memory

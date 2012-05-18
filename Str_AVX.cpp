@@ -1,15 +1,14 @@
 //---------------------------------------------------------------
 // Name: Ren's String Library
 //
-// Light weight string library
-// It is meant to be standalong, not relying on STL
-// Computation speed may be sacrificed for minimal code size
+// A standalone string class not relying on STL.
+// Speed may be sacrificed for code size and readibility, but I've
+// also included some assembly optimizations which may speed things up.
 //
 // Using id's string library as inspiration
 //
-// This file contains AVX optimized functions
-// These are completely untested (and untestable for me) because
-// I do not have a CPU that supports these instructions...
+// This file contains AVX assembly methods.
+// Note: I don't have a sandy bridge CPU, so these are untested
 //---------------------------------------------------------------
 #include "Str.h"
 

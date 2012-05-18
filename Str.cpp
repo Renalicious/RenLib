@@ -1,14 +1,13 @@
 //---------------------------------------------------------------
 // Name: Ren's String Library
 //
-// Light weight string library
-// It is meant to be standalong, not relying on STL
-// Computation speed may be sacrificed for minimal code size
+// A standalone string class not relying on STL.
+// Speed may be sacrificed for code size and readibility, but I've
+// also included some assembly optimizations which may speed things up.
 //
 // Using id's string library as inspiration
 //
-// Preprocessor definitions based on available instruction sets
-// This should make it easier to speed things up if necessary
+// Preprocessor definitions based on available instruction sets:
 // Scalar, MMX, SSE, AVX
 //---------------------------------------------------------------
 
@@ -161,13 +160,17 @@ rStr::rStr(const char* text)
 
 #ifdef ASM
 	l = r_strlen_asm(text);
-#else
-	l = r_strlen(text);
-#endif
 	ensureAlloced(l + 1);
 	len = l;
 	datacopy(text);
-	//r_memcopy_asm(data, text, len);
+	//r_memcopy_asm(data, text, len); //This causes heap corruption for some reason :(
+#else
+	l = r_strlen(text);
+	ensureAlloced(l + 1);
+	len = l;
+	datacopy(text);
+#endif
+	
 }
 
 //--- rStr text constructor
@@ -1163,20 +1166,20 @@ const char* rStr::c_str() const
 }
 
 //--- Find all instances of the token, split local data into induvidual chunks. Returns array of rStrs
-rStr * rStr::split(const char token)
+rStr * rStr::split(const char token, int *_num)
 {
-	return split(data, token);
+	return split(data, token, _num);
 }
 
 //--- Find all instances of the token, split rStr data into induvidual chunks. Returns array of rStrs
-rStr * rStr::split(const rStr &text, const char token)
+rStr * rStr::split(const rStr &text, const char token, int *_num)
 {
-	return split(text.data, token);
+	return split(text.data, token, _num);
 }
 
 //--- Find all instances of the token, split c_str data into induvidual chunks.
 //--- Returns array of rStrs, or original text if no tokens are found
-rStr* rStr::split(const char* text, const char token)
+rStr* rStr::split(const char* text, const char token, int *_num)
 {
 	int count, curCount, textLength, chunkLength, pos, lastPos;
 	rStr *result;
@@ -1198,8 +1201,11 @@ rStr* rStr::split(const char* text, const char token)
 			count++;
 	}
 
-	//Begin populating rStr arrays with chunks
+	
 	count++;
+	*_num = count;
+
+	//Begin populating rStr arrays with chunks
 	if(count)
 	{
 		curCount = 0;
@@ -1212,12 +1218,29 @@ rStr* rStr::split(const char* text, const char token)
 			{
 				chunkLength = pos - lastPos;
 
-				r_memcopy(tempText, text + lastPos, chunkLength - 1);
-				tempText[chunkLength] = '\0';
-				result[curCount].append(tempText);
+				//If chunk length is 0, don't copy memory or it'll copy junk
+				if(chunkLength == 0)
+				{
+					result[curCount].clear();
+				}
+
+				//Special case if we have only 1 character
+				else if(chunkLength == 1)
+				{
+					r_memcopy(tempText, text + lastPos, chunkLength);
+					tempText[chunkLength] = '\0';
+					result[curCount].append(tempText);
+				}
+
+				//Otherwise copy memory
+				else
+				{
+					r_memcopy(tempText, text + lastPos, chunkLength - 1);
+					tempText[chunkLength] = '\0';
+					result[curCount].append(tempText);
+				}
 
 				lastPos = pos + 1; //Skip token
-
 				curCount++;
 			}
 		}

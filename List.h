@@ -1,12 +1,16 @@
 //---------------------------------------------------------------
 // Name: Ren's List Library
 //
-// Light weight list library
-// It is meant to be standalong, not relying on STL
-// Computation speed may be sacrificed for minimal code size
+// A light weight and standalone list class, not relying on STL.
+// Computation speed may be sacrificed for readibility and code size.
 //
 // Using id's list library as inspiration
 //---------------------------------------------------------------
+
+/*
+	Changes and versions:
+	Version 1.0.0 - May 2012: initial release
+*/
 
 #ifndef _RENLIST_
 #define _RENLIST_
@@ -159,7 +163,7 @@ int rList<type>::getSize(void) const
 template<class type>
 size_t rList<type>::getTypeSize(void) const
 {
-	return sizeof(type)
+	return sizeof(type);
 }
 
 template<class type>
@@ -254,7 +258,9 @@ void rList<type>::appendUnique(const type &val)
 	}
 }
 
-//Fill at end of list
+//Allocate and fill elements at the end of list.
+// When working with large lists it's MUCH faster to prefill and then assign elements,
+// than to keep appending new elements
 template<class type>
 void rList<type>::fill(const int length, const type &val)
 {

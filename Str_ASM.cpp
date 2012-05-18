@@ -1,13 +1,13 @@
 //---------------------------------------------------------------
 // Name: Ren's String Library
 //
-// Light weight string library
-// It is meant to be standalong, not relying on STL
-// Computation speed may be sacrificed for minimal code size
+// A standalone string class not relying on STL.
+// Speed may be sacrificed for code size and readibility, but I've
+// also included some assembly optimizations which may speed things up.
 //
 // Using id's string library as inspiration
 //
-// This file contains assembly optimized functions
+// This file contains scalar assembly methods
 //---------------------------------------------------------------
 #include "Str.h"
 
@@ -183,6 +183,11 @@ exit:
 int rStr::r_strlen_asm(const char *src)
 {
 	/* Reference: http://www.int80h.org/strlen/ */
+
+	//Don't bother counting if we're null
+	if(!src)
+		return 0;
+
 	int i = 0;
 	__asm
 	{
@@ -204,6 +209,18 @@ int rStr::r_strlen_asm(const char *src)
 //Copy memory
 void rStr::r_memcopy_asm(const char* dst, const char* src, const int l)
 {
+	//Fast code loop chooser
+	int loopMod = 1;
+	if(l % 10 == 0)		loopMod = 10;
+	else if(l % 9 == 9) loopMod = 9;
+	else if(l % 8 == 8) loopMod = 8;
+	else if(l % 7 == 7) loopMod = 7;
+	else if(l % 6 == 6) loopMod = 6;
+	else if(l % 5 == 5) loopMod = 5;
+	else if(l % 4 == 4) loopMod = 4;
+	else if(l % 3 == 3) loopMod = 3;
+	else if(l % 2 == 2) loopMod = 2;
+	else				loopMod = 1;
 	__asm
 	{
 		mov		edi, dst		//Move dest pointer to edi
@@ -212,6 +229,199 @@ void rStr::r_memcopy_asm(const char* dst, const char* src, const int l)
 
 		cmp		ecx, 0			//See if length is zero
 		jz		exit			//If zero, exit
+
+		mov		edx, loopMod
+		cmp		edx, 1
+		je		loop1
+		cmp		edx, 2
+		je		loop2
+		cmp		edx, 3
+		je		loop3
+		cmp		edx, 4
+		je		loop4
+		cmp		edx, 5
+		je		loop5
+		cmp		edx, 6
+		je		loop6
+		cmp		edx, 7
+		je		loop7
+		cmp		edx, 8
+		je		loop8
+		cmp		edx, 9
+		je		loop9
+		cmp		edx, 10
+		je		loop10
+
+loop10:
+		mov		eax, [esi]
+		mov		[edi], eax
+		mov		eax, [esi+1]
+		mov		[edi+1], eax
+		mov		eax, [esi+2]
+		mov		[edi+2], eax
+		mov		eax, [esi+3]
+		mov		[edi+3], eax
+		mov		eax, [esi+4]
+		mov		[edi+4], eax
+		mov		eax, [esi+5]
+		mov		[edi+5], eax
+		mov		eax, [esi+6]
+		mov		[edi+6], eax
+		mov		eax, [esi+7]
+		mov		[edi+7], eax
+		mov		eax, [esi+8]
+		mov		[edi+8], eax
+		mov		eax, [esi+9]
+		mov		[edi+9], eax
+		add		esi, 10	
+		add		edi, 10
+		sub		ecx, 10	
+		jne		loop10
+		je		exit
+
+loop9:
+		mov		eax, [esi]
+		mov		[edi], eax
+		mov		eax, [esi+1]
+		mov		[edi+1], eax
+		mov		eax, [esi+2]
+		mov		[edi+2], eax
+		mov		eax, [esi+3]
+		mov		[edi+3], eax
+		mov		eax, [esi+4]
+		mov		[edi+4], eax
+		mov		eax, [esi+5]
+		mov		[edi+5], eax
+		mov		eax, [esi+6]
+		mov		[edi+6], eax
+		mov		eax, [esi+7]
+		mov		[edi+7], eax
+		mov		eax, [esi+8]
+		mov		[edi+8], eax
+		add		esi, 9	
+		add		edi, 9
+		sub		ecx, 9	
+		jne		loop9
+		je		exit
+
+loop8:
+		mov		eax, [esi]
+		mov		[edi], eax
+		mov		eax, [esi+1]
+		mov		[edi+1], eax
+		mov		eax, [esi+2]
+		mov		[edi+2], eax
+		mov		eax, [esi+3]
+		mov		[edi+3], eax
+		mov		eax, [esi+4]
+		mov		[edi+4], eax
+		mov		eax, [esi+5]
+		mov		[edi+5], eax
+		mov		eax, [esi+6]
+		mov		[edi+6], eax
+		mov		eax, [esi+7]
+		mov		[edi+7], eax
+		add		esi, 8	
+		add		edi, 8
+		sub		ecx, 8	
+		jne		loop8
+		je		exit
+
+loop7:
+		mov		eax, [esi]
+		mov		[edi], eax
+		mov		eax, [esi+1]
+		mov		[edi+1], eax
+		mov		eax, [esi+2]
+		mov		[edi+2], eax
+		mov		eax, [esi+3]
+		mov		[edi+3], eax
+		mov		eax, [esi+4]
+		mov		[edi+4], eax
+		mov		eax, [esi+5]
+		mov		[edi+5], eax
+		mov		eax, [esi+6]
+		mov		[edi+6], eax
+		add		esi, 7	
+		add		edi, 7
+		sub		ecx, 7	
+		jne		loop7
+		je		exit
+
+loop6:
+		mov		eax, [esi]
+		mov		[edi], eax
+		mov		eax, [esi+1]
+		mov		[edi+1], eax
+		mov		eax, [esi+2]
+		mov		[edi+2], eax
+		mov		eax, [esi+3]
+		mov		[edi+3], eax
+		mov		eax, [esi+4]
+		mov		[edi+4], eax
+		mov		eax, [esi+5]
+		mov		[edi+5], eax
+		add		esi, 6	
+		add		edi, 6
+		sub		ecx, 6	
+		jne		loop6
+		je		exit
+
+loop5:
+		mov		eax, [esi]
+		mov		[edi], eax
+		mov		eax, [esi+1]
+		mov		[edi+1], eax
+		mov		eax, [esi+2]
+		mov		[edi+2], eax
+		mov		eax, [esi+3]
+		mov		[edi+3], eax
+		mov		eax, [esi+4]
+		mov		[edi+4], eax
+		add		esi, 5	
+		add		edi, 5
+		sub		ecx, 5	
+		jne		loop5
+		je		exit
+
+loop4:
+		mov		eax, [esi]
+		mov		[edi], eax
+		mov		eax, [esi+1]
+		mov		[edi+1], eax
+		mov		eax, [esi+2]
+		mov		[edi+2], eax
+		mov		eax, [esi+3]
+		mov		[edi+3], eax
+		add		esi, 4	
+		add		edi, 4
+		sub		ecx, 4	
+		jne		loop4
+		je		exit
+
+loop3:
+		mov		eax, [esi]
+		mov		[edi], eax
+		mov		eax, [esi+1]
+		mov		[edi+1], eax
+		mov		eax, [esi+2]
+		mov		[edi+2], eax
+		add		esi, 3	
+		add		edi, 3
+		sub		ecx, 3	
+		jne		loop3
+		je		exit
+
+loop2:
+		mov		eax, [esi]
+		mov		[edi], eax
+		mov		eax, [esi+1]
+		mov		[edi+1], eax
+		add		esi, 2	
+		add		edi, 2
+		sub		ecx, 2	
+		jne		loop2
+		je		exit
 
 loop1:
 		mov		eax, [esi]		//Move src to EAX
@@ -250,7 +460,7 @@ exit:
 }
 
 //Fill memory using granularity, should make things a bit faster
-//because we're doing 4 bytes per loop instead of 4. This isn't SIMD.
+//because we're doing 4 bytes per loop instead of 1. This isn't SIMD.
 void rStr::r_memset_gran_asm(const char* dst, const char c, const int l)
 {
 	__asm
