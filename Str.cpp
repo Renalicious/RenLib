@@ -6,9 +6,6 @@
 // also included some assembly optimizations which may speed things up.
 //
 // Using id's string library as inspiration
-//
-// Preprocessor definitions based on available instruction sets:
-// Scalar, MMX, SSE, AVX
 //---------------------------------------------------------------
 
 #include "Str.h"
@@ -23,13 +20,7 @@ void rStr::init(void)
 	len = 0;
 	alloced = STR_ALLOC_GRAN;
 	data = initBuffer;
-
-#ifdef ASM
-	//r_memset_asm(data, '\0', alloced);
-	r_memset_gran_asm(data, '\0', regCount());
-#else
 	r_memset(data, '\0', alloced);
-#endif
 }
 
 rStr::~rStr(void)
@@ -89,16 +80,25 @@ void rStr::reAllocate(int amount, bool keepOld)
 //Get length of c[], limit to length of short
 int rStr::r_strlen(const char *text)
 {
-	int i = 0;
+	int i;
+
+#ifdef ASM
+	i = r_strlen_asm(text);
+#else
 	for(i; text[i]; i++) {}
+#endif
 
 	return i;
 }
 
 void rStr::r_memset(char *text, char c, int length)
 {
+#ifdef ASM
+	r_memset_asm(text, c, length);
+#else
 	for(int i = 0; i <= len; i++)
 		text[i] = c;
+#endif
 }
 
 void rStr::r_memcopy(char *dst, const char *src, int length)
@@ -112,35 +112,12 @@ void rStr::r_memcopy(char *dst, const char *src, int length)
 }
 
 //Copy data from a to b, up to length a
+//Keep this around just in case!
 void rStr::datacopy(const char *text)
 {
 	for(int i = 0; i <= len; i++)
 		data[i] = text[i];
 }
-
-//Used by universal replace. TODO, use something else, this function sucks!
-void rStr::datacopy2(const char* text, int index, int length, int dataOffset)
-{
-	int dataIndex = index;
-	int textIndex = 0;
-
-	while(dataIndex < len + (dataOffset) && length > 0)
-	{
-		data[dataIndex] = text[textIndex];
-
-		dataIndex++;
-		textIndex++;
-		length--;
-	}
-}
-
-//Assumes enough allocation
-void rStr::dataappend(const char* text, int length)
-{
-	for(int i = 0; i < length; i++)
-		data[len + i] = text[i];
-}
-
 //-------------------------------------------
 //--- Constructors
 //-------------------------------------------
@@ -158,19 +135,11 @@ rStr::rStr(const char* text)
 
 	init();
 
-#ifdef ASM
-	l = r_strlen_asm(text);
-	ensureAlloced(l + 1);
-	len = l;
-	datacopy(text);
-	//r_memcopy_asm(data, text, len); //This causes heap corruption for some reason :(
-#else
 	l = r_strlen(text);
 	ensureAlloced(l + 1);
 	len = l;
-	datacopy(text);
-#endif
-	
+
+	datacopy(text);	
 }
 
 //--- rStr text constructor
@@ -180,15 +149,11 @@ rStr::rStr(const rStr &text)
 
 	init();
 
-#ifdef ASM
-	l = r_strlen_asm(text.data);
-#else
 	l = r_strlen(text.data);
-#endif
 	ensureAlloced(l + 1);
 	len = l;
+
 	datacopy(text.data);
-	//r_memcopy_asm(data, text.data, len);
 }
 
 //-------------------------------------------
@@ -288,11 +253,7 @@ int rStr::count(const char* text)
 	int matchCount = 0;
 	int textLength = 0;
 
-#ifdef ASM
-	textLength = r_strlen_asm(text);
-#else
-	oldLength = r_strlen(text);
-#endif
+	textLength = r_strlen(text);
 
 	//Search for matches, and determine new length
 	for(int i = 0; i <= len; i++)
@@ -312,11 +273,7 @@ int rStr::universalFindText(const char* text, bool matchCase)
 {
 	int textLength;
 
-#ifdef ASM
-	textLength = r_strlen_asm(text);
-#else
 	textLength = r_strlen(text);
-#endif
 	int j = 0;
 
 	//Start looking through our data for a match
@@ -367,6 +324,7 @@ int rStr::universalFind(const char c, bool isForward, bool matchCase)
 	if(!c)
 		return -1;
 
+//Keeping this pre-processor block because it's big enough
 #ifdef ASM
 	else
 	{
@@ -692,11 +650,7 @@ bool rStr::hasLower(const char* text)
 	if(!text)
 		return false;
 
-#ifdef ASM
-	textLength = r_strlen_asm(text);
-#else
 	textLength = r_strlen(text);
-#endif
 
 	for(int i = 0; i < textLength; i++)
 		if(isLower(text[i]))
@@ -712,11 +666,8 @@ bool rStr::hasUpper(const char* text)
 	if(!text)
 		return false;
 
-#ifdef ASM
-	textLength = r_strlen_asm(text);
-#else
 	textLength = r_strlen(text);
-#endif
+
 	for(int i = 0; i < textLength; i++)
 		if(isUpper(text[i]))
 			return true;
@@ -772,18 +723,14 @@ char* rStr::toLower(const char* text)
 {
 	int l;
 	
-#ifdef ASM
-	l = r_strlen_asm(text);
-#else
 	l = r_strlen(text);
-#endif
-
 	char* newData = new char[l];
 	r_memset(newData, '\0', l);
 
 	for(int i = 0; i < l; i++)
 		newData[i] = toLower(text[i]);
 
+	newData[l] = '\0';
 	return newData;
 }
 
@@ -791,18 +738,14 @@ char* rStr::toUpper(const char* text)
 {
 	int l;
 	
-#ifdef ASM
-	l = r_strlen_asm(text);
-#else
 	l = r_strlen(text);
-#endif
-
 	char* newData = new char[l];
 	r_memset(newData, '\0', l);
 
 	for(int i = 0; i < l; i++)
 		newData[i] = toUpper(text[i]);
 
+	newData[l] = '\0';
 	return newData;
 }
 
@@ -827,16 +770,15 @@ void rStr::append(const char* text)
 		int textLength;
 		int newLength;
 
-#ifdef ASM
-		textLength = r_strlen_asm(text);
-#else
 		textLength = r_strlen(text);
-#endif
 		newLength = len + textLength;
 
 		ensureAlloced(newLength + 2, true);
 
-		dataappend(text, textLength);
+		//Append data here
+		for(int i = 0; i < textLength; i++)
+			data[len + i] = text[i];
+
 		len = newLength;
 
 		data[len] = '\0';
@@ -873,12 +815,7 @@ void rStr::insert(const char* text, int index)
 	if(index < 0)			index = 0;
 	else if(index > len)	index = len;
 
-#ifdef ASM
-	l = r_strlen_asm(text);
-#else
 	l = r_strlen(text);
-#endif
-
 	ensureAlloced(len + l + 1, true);
 
 	//Id's brilliant technique :)
@@ -899,13 +836,8 @@ void rStr::insert(const rStr &text, int index)
 	{
 		char *dataCopy = new char[alloced]; //Used alloced so it'll work with ASM
 
-#ifdef ASM
-		r_memset_gran_asm(dataCopy, '\0', regCount());
-		r_memcopy_asm(dataCopy, data, alloced);
-#else
 		r_memset(dataCopy, '\0', len);
 		r_memcopy(dataCopy, data, len);
-#endif
 		insert(dataCopy, index);
 	}
 
@@ -948,12 +880,7 @@ void rStr::fill(const char c)
 {
 	if(c)
 	{
-#ifdef ASM
-		r_memset_gran_asm(data, c, regCount());
-#else
-		r_memset(dataCopy, c, len);
-#endif
-
+		r_memset(data, c, len);
 		data[len] = '\0';
 	}
 }
@@ -966,11 +893,7 @@ void rStr::fill(const char c, int newLength)
 		ensureAlloced(newLength + 2, true);
 		len = newLength;
 
-#ifdef ASM
-		r_memset_gran_asm(data, c, regCount());
-#else
 		r_memset(data, c , len);
-#endif
 		data[len] = '\0';
 	}
 }
@@ -1002,14 +925,9 @@ void rStr::del(int index)
 		ensureAlloced(newLength + 1, false);
 		len = newLength;
 
-#ifdef ASM
-		r_memcopy_asm(data, oldString.data, 0 + index);
-		r_memcopy_asm(data + index, oldString.data + index + 1, len - index);
-#else
 		//Copy 0 - index, and then index + 1 to len
 		r_memcopy(data, oldString.data, 0 + index);
 		r_memcopy(data + index, oldString.data + index + 1, len - index);
-#endif
 
 		data[len] = '\0';
 	}
@@ -1055,11 +973,7 @@ void rStr::stripLeading(const char c)
 	while(data[pos] == c && pos <= len)
 		pos++;
 
-#ifdef ASM
-	r_memcopy_asm(data, data + pos, len - pos);
-#else
 	r_memcopy(data, data + pos, len - pos);
-#endif
 
 	len = len - pos;
 	data[len] = '\0';
@@ -1086,11 +1000,7 @@ void rStr::stripPath(void)
 			break;
 	}
 
-#ifdef ASM
-	r_memcopy_asm(data, data + pos, len - pos);
-#else
 	r_memcopy(data, data + pos, len - pos);
-#endif
 
 	len = len - pos;
 	data[len] = '\0';
@@ -1104,14 +1014,8 @@ void rStr::universalReplace(const char* old, const char* nw)
 	int oldPos = 0;
 	int newPos = 0;
 
-#ifdef ASM
-	oldLength = r_strlen_asm(old);
-	newLength = r_strlen_asm(nw);
-#else
 	oldLength = r_strlen(old);
 	newLength = r_strlen(nw);
-#endif
-
 	rStr oldString = data;
 
 	//Search for matches, and determine new length
@@ -1134,7 +1038,7 @@ void rStr::universalReplace(const char* old, const char* nw)
 		{
 			if( compare(oldString.data, old, oldPos, oldLength) )
 			{
-				datacopy2(nw, newPos, newLength, newPos); // <--- Really need to get rid of this
+				r_memcopy( data + newPos, nw, newLength );
 				oldPos += oldLength - 1; //Move ahead past oldWord
 				newPos += newLength;
 			}
@@ -1145,13 +1049,8 @@ void rStr::universalReplace(const char* old, const char* nw)
 			}
 		}
 
-#ifdef ASM
-		len = r_strlen_asm(data);
-		data[newPos] = '\0';
-#else
 		len = r_strlen(data);
 		data[newPos] = '\0';
-#endif
 	}
 }
 
@@ -1185,12 +1084,7 @@ rStr* rStr::split(const char* text, const char token, int *_num)
 	rStr *result;
 	char *tempText;
 
-#ifdef ASM
-	textLength = r_strlen_asm(text);
-#else
 	textLength = r_strlen(text);
-#endif
-
 	tempText = new char[textLength]; //Incase we have a LONG chunk
 
 	//Find token count
@@ -1541,15 +1435,9 @@ void rStr::operator=(const char* text)
 	if(text == data)
 		return;
 
-#ifdef ASM
-	l = r_strlen_asm(text);
-	ensureAlloced(l + 1, false);
-	r_memcopy_asm(data, text, len);
-#else
 	l = r_strlen(text);
 	ensureAlloced(l + 1, false);
-	datacopy(text);
-#endif
+	datacopy(text); //Keeping this here until I figure out why the assembly version causes heap errors
 	
 	len = l;
 }

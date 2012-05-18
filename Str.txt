@@ -1,0 +1,24 @@
+Changes and versions:
+Version 1.0.2 - May 17 2012:
+	+Removed preprocessor logic from methods, and put it in memory operation methods instead.
+	This cleans up the code a bit and allows me to define different assembly optimizations
+	in just those few methods, insteads of having to track down each preprocessor throughout the code
+	and replace it. 
+
+	+Removed MMX, SSE, and AVX assembly because I figure any CPU fast enough to use something like SSE won't be
+	bogged down by this code. And scalar assembly isn't too slow. I may yet decide to use a child class
+	which overrides the memory methods with MMX, SSE, or AVX assembly. Something like rStr_MMX, etc.
+
+Version 1.0.1 - May 15 2012:
+	+Added an int pointer as a return value for the split method,
+	This breaks the rules of functional programing, but it's much more convenient
+	getting the number of splits this way.
+
+	+Added some 'fact code' optimizations to "r_memcopy_asm", by way of explicit loop lengths,
+	this will reduce the number of loop compares for long strings.
+
+	+Fixed a crash bug in the split method where the chunkLength would end up 0.
+	Eg, splitting text with token '\n', on a line that only contained '\n'.
+
+Version 1.0.0 - May 2012:
+	+Initial release

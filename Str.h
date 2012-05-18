@@ -6,48 +6,14 @@
 // also included some assembly optimizations which may speed things up.
 //
 // Using id's string library as inspiration
-//
-// Preprocessor definitions based on available instruction sets:
-// Scalar, MMX, SSE, AVX
 //---------------------------------------------------------------
-
-/*
-	Changes and versions:
-	Version 1.0.1 - May 15 2012: +Added an int pointer as a return value for the split method,
-									This breaks the rules of functional programing, but it's much more convenient
-									getting the number of splits this way.
-
-								 +Added some 'fact code' optimizations to "r_memcopy_asm", by way of explicit loop lengths,
-									this will reduce the number of loop compares for long strings.
-
-								 +Fixed a crash bug in the split method where the chunkLength would end up 0.
-									Eg, splitting text with token '\n', on a line that only contained '\n'.
-
-	Version 1.0.0 - May 2012: initial release
-*/
 
 #ifndef _RENSTR_
 #define _RENSTR_
-#define _RENSTR_VER_	"1.0.1"
+#define _RENSTR_VER_	"1.0.2"
 
-
-
-	#ifdef			_MMX_
-		const int	STR_ALLOC_GRAN = 8;			//8 chars, 64bits MMX
-
-	#elif defined	_SSE_
-		#undef _MMX_
-		const int	STR_ALLOC_GRAN = 16;		//16 chars, 128bits SSE
-
-	#elif defined	_AVX_
-		#undef _MMX_
-		#undef _SSE_
-		const int	STR_ALLOC_GRAN = 32;		//32 chars, 256bits AVX
-
-	#else 
-		#define ASM
-		const int	STR_ALLOC_GRAN = 4;			//4 chars, 32bits scalar
-	#endif
+#define	ASM
+const int	STR_ALLOC_GRAN = 4;			//4 chars, 32bits scalar
 
 class rStr
 {
@@ -197,36 +163,7 @@ public:
 	rStr &				operator+=( const bool a );
 
 	//--- Assembly optimized
-#ifdef _MMX_
-	void		toLower_mmx(void);
-	void		toUpper_mmx(void);
-	bool		hasLower_mmx(void);
-	bool		hasUpper_mmx(void);
-	void		fill_mmx(const char c);
-	void		r_memcopy_mmx(const char* dst, const char* src, const int length);
-	void		r_memset_mmx(char* text, char c, int length);
-	void		r_memset_gran_mmx(const char* dst, const char c, const int regCount);
-
-#elif defined _SSE_
-	void		toLower_sse(void);
-	void		toUpper_sse(void);
-	bool		hasLower_sse(void);
-	bool		hasUpper_sse(void);
-	void		fill_sse(const char c);
-	int			r_strlen_sse42(const char* src); //SSE4.2 only!!
-	int			r_strlen_sse(const char* src);
-	void		r_memset_sse(const char* dst, const char c, const int length);
-
-#elif defined _AVX_
-	void		toLower_avx(void);
-	void		toUpper_avx(void);
-	bool		hasLower_avx(void);
-	bool		hasUpper_avx(void);
-	void		fill_avx(const char c);
-	int			r_strlen_avx(const char* src); //Derived from r_strlen_sse42
-	void		r_memset_avx(char* text, char c, int length);
-
-#elif defined ASM
+#if defined ASM
 	int			find_asm(const char* text, const char c, const int length);				//Case Sensitive, front to back
 	int			rfind_asm(const char* text, const char c, const int length);			//Case Sensitive, back to front
 	int			findNoCase_asm(const char* text, const char cL, const char cU, const int length);	//Case Sensitive, front to back
@@ -263,8 +200,6 @@ protected:
 	void		r_memset(char* text, char c, int length);
 	void		r_memcopy(char * dst, const char *src, int length);
 	void		datacopy(const char* text);
-	void		datacopy2(const char* text, int index, int length, int dataOffset = 0);
-	void		dataappend(const char* text, int length);
 };
 
 #endif /* _RENSTR_ */
