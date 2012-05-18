@@ -171,7 +171,6 @@ public:
 	int			r_strlen_asm(const char* text);
 	void		r_memcopy_asm(const char* dst, const char* src, const int length);		//Assembly optimized memcopy
 	void		r_memset_asm(const char* dst, const char c, const int length);			//Assembly optimized memset
-	void		r_memset_gran_asm(const char* dst, const char c, const int regCount);	//Assembly optimized memset, 4 bytes per loop, should cut down on instructions
 
 #endif
 

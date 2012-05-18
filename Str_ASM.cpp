@@ -458,31 +458,4 @@ exit:
 		nop
 	}
 }
-
-//Fill memory using granularity, should make things a bit faster
-//because we're doing 4 bytes per loop instead of 1. This isn't SIMD.
-void rStr::r_memset_gran_asm(const char* dst, const char c, const int l)
-{
-	__asm
-	{
-		mov		edi, dst		//Move dest pointer to edi
-		mov		al, c			//Move character into lower EAX
-		mov		ecx, l			//Move regCount into ecx
-
-		cmp		ecx, 0			//See if length is zero
-		jz		exit			//If zero, exit
-
-loop4:
-		mov		[edi    ], al	//Do 4 copies each loop
-		mov		[edi + 1], al
-		mov		[edi + 2], al
-		mov		[edi + 3], al
-		add		edi, 4
-		dec		ecx				//We're going by regCount, not length
-		jne		loop4
-
-exit:
-		nop
-	}
-}
 #endif
