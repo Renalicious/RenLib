@@ -64,36 +64,17 @@ float rVec2::length(void) const
 
 float rVec2::dot(void) const
 {
-	float result;
-	result = x*x + y*y;
-
-	__asm
-	{
-		sqrtss		xmm1, result
-		movss		result, xmm1
-	}
-
-	return result;
+	return (x*x + y*y);
 }
 
 float rVec2::dot(const rVec2 &vec) const
 {
-	float result;
-	result = x * vec.x + y * vec.y;
-
-	__asm
-	{
-		sqrtss		xmm1, result
-		movss		result, xmm1
-	}
-
-	return result;
+	return ( (x * vec.x) + (y * vec.y) );
 }
 
 float rVec2::cross(const rVec2 &vec)
 {
-	//U x V = Ux*Vy-Uy*Vx
-	 return this->x * vec.y - this->y * vec.x;
+	return ( (x * vec.y) - (y * vec.x) );
 }
 
 rVec2 rVec2::truncate(const float max) const
@@ -109,6 +90,12 @@ rVec2 rVec2::truncate(const float max) const
 
 	else
 		return *this;
+}
+
+float4 rVec2::asFloat4(void) const
+{
+	float4 res = {x, y, 0.0f, 0.0f};
+	return res;
 }
 
 //Misc
@@ -279,30 +266,12 @@ float rVec3::length(void) const
 
 float rVec3::dot(void) const
 {
-	float result;
-	result = x*x + y*y + z*z;
-
-	__asm
-	{
-		sqrtss		xmm1, result
-		movss		result, xmm1
-	}
-
-	return result;
+	return (x*x + y*y + z*z);
 }
 
 float rVec3::dot(const rVec3 &vec) const
 {
-	float result;
-	result = x * vec.x + y * vec.y + z * vec.z;
-
-	__asm
-	{
-		sqrtss		xmm1, result
-		movss		result, xmm1
-	}
-
-	return result;
+	return ( (x * vec.x) + (y * vec.y) + (z * vec.z) );
 }
 
 rVec3 rVec3::truncate(const float max) const
@@ -336,6 +305,12 @@ rVec3 rVec3::truncate(const float max) const
 		else
 			return *this;
 	}
+}
+
+float4 rVec3::asFloat4(void) const
+{
+	float4 res = {x, y, z, 0.0f};
+	return res;
 }
 
 //Misc

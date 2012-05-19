@@ -40,7 +40,8 @@ public:
 	float		dot(void) const;					//Return dot product of local vector
 	float		dot(const rVec2 &vec) const;		//Return doc product of local and other
 	float		cross(const rVec2 &vec);			//Get cross product of external vector U x V = Ux*Vy-Uy*Vx
-	rVec2		truncate(const float max) const;	//Truncate vector	
+	rVec2		truncate(const float max) const;	//Truncate vector
+	float4		asFloat4(void) const;				//Return float4, useful for dot_sse()
 
 	//Opperators
 	rVec2		operator-(void) const;				//Same as reverse() + get()
@@ -92,6 +93,7 @@ public:
 	float		dot(void) const;					//Return dot product of local vector
 	float		dot(const rVec3 &vec) const;		//Return doc product of local and other
 	rVec3		truncate(const float max) const;	//Truncate vector
+	float4		asFloat4(void) const;				//Return float4, useful for dot_sse()
 
 	//Opperators
 	rVec3		operator-(void) const;				//Same as reverse() + get()
