@@ -10,6 +10,8 @@
 #ifndef _RENTYPES_
 #define _RENTYPES_
 
+//#define _SSE3_
+
 //---------------------------------------------------------------
 //--- Typedefs
 //---------------------------------------------------------------
@@ -129,10 +131,15 @@ __declspec(align(4)) struct ARGB
 //--- Class, single precision float
 //---------------------------------------------------------------
 
-//Position math
-float dot2(const float2 &p1, const float2 &p2);
-float dot3(const float3 &p1, const float3 &p2);
-float dot2Fast(const float2 &p1, const float2 &p2);
-float dot3Fast(const float3 &p1, const float3 &p2);
+//Distance between points (not DOT product)
+float dist2d(const float2 &p1, const float2 &p2);
+float dist3d(const float3 &p1, const float3 &p2);
+float dist_sse(const float4 &p1, const float4 &p2);
+float distFast_sse(const float4 &p1, const float4 &p2);
+
+//DOT product between vectors
+float dot2d(const float2 &v1, const float2 &v2);
+float dot3d(const float3 &v1, const float3 &v2);
+float dot_sse(const float4 &v1, const float4 &v2);
 
 #endif /* _RENTYPES_ */

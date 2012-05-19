@@ -9,9 +9,9 @@
 #include "CustomTypes.h"
 
 //---------------------------------------------------------------
-//--- Position math
+//--- Distance between two points
 //---------------------------------------------------------------
-float dot2(const float2 &p1, const float2 &p2)
+float dist2d(const float2 &p1, const float2 &p2)
 {
 	float Dx, Dy, result;
 
@@ -29,100 +29,152 @@ float dot2(const float2 &p1, const float2 &p2)
 	return result;
 }
 
-float dot3(const float3 &p1, const float3 &p2)
+float dist3d(const float3 &p1, const float3 &p2)
 {
-#ifdef _SSE2_
-	
-	//I wonder how much recasting float3 into float4 slows things down
-	float result = 0.0f;
-	float4 p2a = {0.0f, 0.0f, 0.0f, 0.0f};
-	float4 p1a = {0.0f, 0.0f, 0.0f, 0.0f};
+	float Dx, Dy, Dz, result;
 
-	p2a.w = 0.0f;
-	p2a.x = p2.x;
-	p2a.y = p2.y;
-	p2a.z = p2.z;
+	Dx = p2.x - p1.x;
+	Dy = p2.y - p1.y;
+	Dz = p2.z - p1.z;
 
-	p1a.w = 0.0f;
-	p1a.x = p1.x;
-	p1a.y = p1.y;
-	p1a.z = p1.z;
+	result = (Dx * Dx) + (Dy * Dy) + (Dz * Dz);
 
 	__asm
 	{
-		movups		xmm1, p2a		//[-][p2.x][p2.y][p2.z] <-- p2
-		movups		xmm2, p1a		//[-][p1.x][p1.y][p1.z] <-- p1
-		subps		xmm1, xmm2		//[-][ Dx ][ Dy ][ Dz ] = [-][p2.x][p2.y][p2.z] - [-][p1.x][p1.y][p1.z]
-		mulps		xmm1, xmm1		//[-][Dx^2][Dy^2][Dz^2] = [-][ Dx ][ Dy ][ Dz ] * [-][ Dx ][ Dy ][ Dz ]
+		sqrtss		xmm1, result
+		movss		result, xmm1
+	}
+
+	return result;
+}
+
+float dist_sse(const float4 &p1, const float4 &p2)
+{
+	float result;
 
 #ifdef _SSE3_
-		haddps		xmm1, xmm1		//[-][Dx^2][Dy^2 + Dz^2] <-- [-][Dx^2][Dy^2][Dz^2]
-		haddps		xmm1, xmm1		//[-][-][Dx^2 + Dy^2 + Dz^2] <-- [-][Dx^2][Dy^2 + Dz^2]
-#else
-		pshufd		xmm0,xmm1,	49//0b00110001	//1->0, 3->2
-		addps		xmm1,xmm0				//0+1, xx, 2+3, xx
-		pshufd		xmm0,xmm1,	2//0b00000010	//2->0
-		addps		xmm1,xmm0		
-#endif
+	__asm 
+	{
+		mov			esi, p1
+		mov			edi, p2
+		movaps		xmm0, [esi]
+		movaps		xmm1, [edi]
+		subps		xmm0, xmm1
+		mulps		xmm0, xmm0
 
-		sqrtss		xmm1, xmm1		//Sqrt [][][][Dx^2 + Dy^2 + Dz^2]
-		movss		result, xmm1	//result <-- [][][][Sqrt(Dx^2 + Dy^2 + Dz^2)]
+		haddps		xmm0, xmm0
+		haddps		xmm0, xmm0
+
+		sqrtss		xmm0, xmm0
+		movss		result, xmm0
 	}
-	return result;
 #else
-
-	float Dx, Dy, Dz, result;
-
-	Dx = p2.x - p1.x;
-	Dy = p2.y - p1.y;
-	Dz = p2.z - p1.z;
-
-	result = (Dx * Dx) + (Dy * Dy) + (Dz * Dz);
-
 	__asm
 	{
-		sqrtss		xmm1, result
-		movss		result, xmm1
+		mov			esi, p1
+		mov			edi, p2
+		movaps		xmm0, [esi]
+		movaps		xmm1, [edi]
+		subps		xmm0, xmm1
+		mulps		xmm0, xmm0
+
+		pshufd		xmm1, xmm0,	49
+		addps		xmm0, xmm1
+		pshufd		xmm1, xmm0,	2
+		addps		xmm0, xmm1
+
+		sqrtss		xmm0, xmm0
+		movss		result, xmm0
 	}
-
-	return result;
-
 #endif
-}
-
-float dot2Fast(const float2 &p1, const float2 &p2)
-{
-	float Dx, Dy, result;
-
-	Dx = p2.x - p1.x;
-	Dy = p2.y - p1.y;
-
-	result = (Dx * Dx) + (Dy * Dy);
-
-	__asm
-	{
-		rsqrtss		xmm1, result
-		movss		result, xmm1
-	}
-
 	return result;
 }
 
-float dot3Fast(const float3 &p1, const float3 &p2)
+float distFast_sse(const float4 &p1, const float4 &p2)
 {
-	float Dx, Dy, Dz, result;
+	float result;
 
-	Dx = p2.x - p1.x;
-	Dy = p2.y - p1.y;
-	Dz = p2.z - p1.z;
+#ifdef _SSE3_
+	__asm 
+	{
+		mov			esi, p1
+		mov			edi, p2
+		movaps		xmm0, [esi]
+		movaps		xmm1, [edi]
+		subps		xmm0, xmm1
+		mulps		xmm0, xmm0
 
-	result = (Dx * Dx) + (Dy * Dy) + (Dz * Dz);
+		haddps		xmm0, xmm0
+		haddps		xmm0, xmm0
 
+		rsqrtss		xmm0, xmm0
+		movss		result, xmm0
+	}
+#else
 	__asm
 	{
-		rsqrtss		xmm1, result
-		movss		result, xmm1
-	}
+		mov			esi, p1
+		mov			edi, p2
+		movaps		xmm0, [esi]
+		movaps		xmm1, [edi]
+		subps		xmm0, xmm1
+		mulps		xmm0, xmm0
 
+		pshufd		xmm1, xmm0,	49
+		addps		xmm0, xmm1
+		pshufd		xmm1, xmm0,	2
+		addps		xmm0, xmm1
+
+		rsqrtss		xmm0, xmm0
+		movss		result, xmm0
+	}
+#endif
+	return result;
+}
+
+//---------------------------------------------------------------
+//--- DOT product between two vectors
+//---------------------------------------------------------------
+float dot2d(const float2 &v1, const float2 &v2)
+{
+	return ( (v1.x * v2.x) + (v1.y + v2.y) );
+}
+
+float dot3d(const float3 &v1, const float3 &v2)
+{
+	return ( (v1.x * v2.x) + (v1.y + v2.y) + (v1.z + v2.z) );
+}
+
+float dot_sse( const float4 &v1, const float4 &v2 )
+{
+	float result;
+
+#ifdef _SSE3_
+	__asm
+	{
+		mov			esi, v1
+		mov			edi, v2
+		movaps		xmm0, [esi]
+		mulps		xmm0, [edi]
+		haddps		xmm0, xmm0
+		haddps		xmm0, xmm0
+		movss		result, xmm0
+	}
+#else
+	__asm
+	{
+		mov			esi, v1
+		mov			edi, v2
+		movaps		xmm0, [esi]
+		mulps		xmm0, [edi]
+
+		pshufd		xmm1, xmm0,	49
+		addps		xmm0, xmm1
+		pshufd		xmm1, xmm0,	2
+		addps		xmm0, xmm1
+
+		movss		result, xmm0
+	}
+#endif
 	return result;
 }
