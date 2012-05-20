@@ -14,6 +14,7 @@
 #define _RENVECTOR_
 
 #include "Vector.h"
+#include "Math.h"
 #include "CustomTypes.h"
 
 //---------------------------------------------------------------
@@ -33,14 +34,14 @@ public:
 
 	//Get and Set
 	void		set(const float x, const float y);
+	void		set(const float2 &p1, const float2 &p2); //Create vector from two points
 	rVec2		get(void) const;
 
 	//Return data
-	float		length(void) const;					//Return length of vector
-	float		dot(void) const;					//Return dot product of local vector
+	float		lengthSqr(void) const;				//Return squared length of vector
+	float		length(void) const;					//Return length local vector
 	float		dot(const rVec2 &vec) const;		//Return doc product of local and other
-	float		cross(const rVec2 &vec);			//Get cross product of external vector U x V = Ux*Vy-Uy*Vx
-	rVec2		truncate(const float max) const;	//Truncate vector
+	rVec2		truncate(const float max);			//Truncate vector
 	float4		asFloat4(void) const;				//Return float4, useful for dot_sse()
 
 	//Opperators
@@ -86,13 +87,16 @@ public:
 
 	//Get and Set
 	void		set(const float x, const float y, const float z);
+	void		set(const float3 &p1, const float3 &p2); //Create vector from two points
 	rVec3		get(void) const;
 
 	//Return data
-	float		length(void) const;					//Return length of vector
-	float		dot(void) const;					//Return dot product of local vector
+	float		lengthSqr(void) const;				//Return squared length of vector
+	float		length(void) const;					//Return length local vector
 	float		dot(const rVec3 &vec) const;		//Return doc product of local and other
-	rVec3		truncate(const float max) const;	//Truncate vector
+	rVec3		cross(const rVec3 &a) const;		//Return cross product beween local and external
+	rVec3&		cross(const rVec3 &a, const rVec3 &b); //Return cross product between two externals
+	rVec3		truncate(const float max);			//Truncate vector
 	float4		asFloat4(void) const;				//Return float4, useful for dot_sse()
 
 	//Opperators

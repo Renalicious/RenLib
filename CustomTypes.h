@@ -127,19 +127,4 @@ __declspec(align(4)) struct ARGB
 	unsigned char  b;
 };
 
-//---------------------------------------------------------------
-//--- Class, single precision float
-//---------------------------------------------------------------
-
-//Distance between points (not DOT product)
-float dist2d(const float2 &p1, const float2 &p2);
-float dist3d(const float3 &p1, const float3 &p2);
-float dist_sse(const float4 &p1, const float4 &p2);
-float distFast_sse(const float4 &p1, const float4 &p2);
-
-//DOT product between vectors
-float dot2d(const float2 &v1, const float2 &v2);
-float dot3d(const float3 &v1, const float3 &v2);
-float dot_sse(const float4 &v1, const float4 &v2);
-
 #endif /* _RENTYPES_ */

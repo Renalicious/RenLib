@@ -51,20 +51,27 @@ void rVec2::set(const float newX, const float newY)
 	y = newY;
 }
 
+void rVec2::set(const float2 &p1, const float2 &p2)
+{
+	x = p2.x - p1.x;
+	y = p2.y - p1.y;
+}
+
 rVec2 rVec2::get(void) const
 {
 	return *this;
 }
 
 //Return data
-float rVec2::length(void) const
+float rVec2::lengthSqr(void) const
 {
-	return x + y;
+	//This is basically a dot product of itself
+	return (x*x + y*y);
 }
 
-float rVec2::dot(void) const
+float rVec2::length(void) const
 {
-	return (x*x + y*y);
+	return rMath::sqrt(x*x + y*y);
 }
 
 float rVec2::dot(const rVec2 &vec) const
@@ -72,24 +79,28 @@ float rVec2::dot(const rVec2 &vec) const
 	return ( (x * vec.x) + (y * vec.y) );
 }
 
-float rVec2::cross(const rVec2 &vec)
+//Basically using id's method
+rVec2 rVec2::truncate(const float max)
 {
-	return ( (x * vec.y) - (y * vec.x) );
-}
+	float adjust, vecLen;
 
-rVec2 rVec2::truncate(const float max) const
-{
-	if(x >= max && y >= max)
-		return rVec2(max, max);
-
-	else if(x < max && y >= max)
-		return rVec2(this->x, max);
-
-	else if(x >= max && y < max)
-		return rVec2(max, this->y);
-
+	if(!max)
+	{
+		zero();
+	}
 	else
-		return *this;
+	{
+		vecLen = lengthSqr();
+		if( vecLen > (max * max) )
+		{
+			adjust = max * rMath::invSqrt(vecLen);
+
+			x *= adjust;
+			y *= adjust;
+		}
+	}
+
+	return *this;
 }
 
 float4 rVec2::asFloat4(void) const
@@ -105,8 +116,8 @@ void rVec2::zero(void)
 }
 void rVec2::snap(void)
 {
-	x = (int)(x + 0.5f);
-	y = (int)(y + 0.5f);
+	x = rMath::RoundToInt(x);
+	y = rMath::RoundToInt(y);
 }
 void rVec2::reverse(void)
 {
@@ -253,20 +264,28 @@ void rVec3::set(const float newX, const float newY, const float newZ)
 	z = newZ;
 }
 
+void rVec3::set(const float3 &p1, const float3 &p2)
+{
+	x = p2.x - p1.x;
+	y = p2.y - p1.y;
+	z = p2.z - p1.z;
+}
+
 rVec3 rVec3::get(void) const
 {
 	return *this;
 }
 
 //Return data
-float rVec3::length(void) const
+float rVec3::lengthSqr(void) const
 {
-	return x + y + z;
+	//This is basically a dot product of itself
+	return (x*x + y*y + z*z);
 }
 
-float rVec3::dot(void) const
+float rVec3::length(void) const
 {
-	return (x*x + y*y + z*z);
+	return rMath::sqrt(x*x + y*y + z*z);
 }
 
 float rVec3::dot(const rVec3 &vec) const
@@ -274,37 +293,42 @@ float rVec3::dot(const rVec3 &vec) const
 	return ( (x * vec.x) + (y * vec.y) + (z * vec.z) );
 }
 
-rVec3 rVec3::truncate(const float max) const
+rVec3 rVec3::cross(const rVec3 &a) const
 {
-	if(z >= max)
+	return rVec3( y * a.z - z * a.y, z * a.x - x * a.z, x * a.y - y * a.x );
+}
+
+rVec3& rVec3::cross(const rVec3 &a, const rVec3 &b)
+{
+	x = a.y * b.z - a.z * b.y;
+	y = a.z * b.x - a.x * b.z;
+	z = a.x * b.y - a.y * b.x;
+
+	return *this;
+}
+
+rVec3 rVec3::truncate(const float max)
+{
+	float adjust, vecLen;
+
+	if(!max)
 	{
-		if(x >= max && y >= max)
-			return rVec3(max, max, max);
+		zero();
+	}
+	else
+	{
+		vecLen = lengthSqr();
+		if( vecLen > (max * max) )
+		{
+			adjust = max * rMath::invSqrt(vecLen);
 
-		else if(x < max && y >= max, max)
-			return rVec3(this->x, max, max);
-
-		else if(x >= max && y < max)
-			return rVec3(max, this->y, max);
-
-		else
-			return rVec3(x, y, max);
+			x *= adjust;
+			y *= adjust;
+			z *= adjust;
+		}
 	}
 
-	else if(z < max)
-	{
-		if(x >= max && y >= max)
-			return rVec3(max, max, z);
-
-		else if(x < max && y >= max)
-			return rVec3(this->x, max, z);
-
-		else if(x >= max && y < max)
-			return rVec3(max, this->y, z);
-		
-		else
-			return *this;
-	}
+	return *this;
 }
 
 float4 rVec3::asFloat4(void) const
@@ -320,9 +344,9 @@ void rVec3::zero(void)
 }
 void rVec3::snap(void)
 {
-	x = (int)(x + 0.5f);
-	y = (int)(y + 0.5f);
-	z = (int)(z + 0.5f);
+	x = rMath::RoundToInt(x);
+	y = rMath::RoundToInt(y);
+	z = rMath::RoundToInt(z);
 }
 void rVec3::reverse(void)
 {
