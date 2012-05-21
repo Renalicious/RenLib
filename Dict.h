@@ -65,10 +65,10 @@ public:
 	const int*		indexesOf(const val_t &val) const;						//Return all index of matched values
 
 	//Returning data
-	const key_t&	getKey(const int index);								//Return key at index
-	const val_t&	getVal(const int index);								//Return value at index
-	const key_t&	getKey(const int index) const;
-	const val_t&	getVal(const int index) const;
+	const key_t		getKey(const int index);								//Return key at index
+	const val_t		getVal(const int index);								//Return value at index
+	const key_t		getKey(const int index) const;
+	const val_t		getVal(const int index) const;
 
 	//Whole operations
 	void			clear(void);											//Reset list to zero
@@ -495,7 +495,7 @@ const int* rDict<key_t, val_t>::indexesOf( const val_t & val) const
 //--- Returning data
 //-------------------------------------------
 template<class key_t, class val_t>
-const key_t& rDict<key_t, val_t>::getKey(const int index)
+const key_t rDict<key_t, val_t>::getKey(const int index)
 {
 	int pos;
 
@@ -520,7 +520,7 @@ const key_t& rDict<key_t, val_t>::getKey(const int index)
 }
 
 template<class key_t, class val_t>
-const val_t& rDict<key_t, val_t>::getVal(const int index)
+const val_t rDict<key_t, val_t>::getVal(const int index)
 {
 	int pos;
 
@@ -546,7 +546,7 @@ const val_t& rDict<key_t, val_t>::getVal(const int index)
 
 
 template<class key_t, class val_t>
-const key_t& rDict<key_t, val_t>::getKey(const int index) const
+const key_t rDict<key_t, val_t>::getKey(const int index) const
 {
 	int pos;
 
@@ -571,7 +571,7 @@ const key_t& rDict<key_t, val_t>::getKey(const int index) const
 }
 
 template<class key_t, class val_t>
-const val_t& rDict<key_t, val_t>::getVal(const int index) const
+const val_t rDict<key_t, val_t>::getVal(const int index) const
 {
 	int pos;
 

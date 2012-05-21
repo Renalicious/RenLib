@@ -53,6 +53,7 @@ void rVec2::set(const float newX, const float newY)
 
 void rVec2::set(const float2 &p1, const float2 &p2)
 {
+	//Vector from two points
 	x = p2.x - p1.x;
 	y = p2.y - p1.y;
 }
@@ -266,6 +267,7 @@ void rVec3::set(const float newX, const float newY, const float newZ)
 
 void rVec3::set(const float3 &p1, const float3 &p2)
 {
+	//Vector from two points
 	x = p2.x - p1.x;
 	y = p2.y - p1.y;
 	z = p2.z - p1.z;

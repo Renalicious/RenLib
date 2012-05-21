@@ -79,6 +79,40 @@ int rMath::pow_base2(const int n, const int exp)
 		return n;
 }
 
+//V1.6 log(x) approximation by TomC, helped: bootsy,infuzion
+float rMath::log10(const float x)
+{
+	float y;
+	float log=.4342945;
+	float F1=1;
+	float F2=2;
+	float FP33=.3333333;
+	float FP2=.2;
+
+	__asm
+	{
+		movaps	xmm0,x;
+		movaps	xmm1,F1;
+		movaps	xmm2,xmm0;
+		subps	xmm0,xmm1;
+		addps	xmm1,xmm2;
+		divps	xmm0,xmm1;
+		movaps	xmm1,xmm0;
+		mulps	xmm1,xmm0;
+		mulps	xmm0,F2;
+		movaps	xmm2,xmm1;
+		mulps	xmm2,FP33;
+		mulps	xmm1,xmm1;
+		mulps	xmm1,FP2;
+		addps	xmm1,xmm2;
+		addps	xmm1,F1;
+		mulps	xmm1,xmm0;
+		mulps	xmm1,log;
+		movaps	y,xmm1;
+	}
+	return y;
+}
+
 int rMath::abs(const int n)
 {
 	if(n < 0)
