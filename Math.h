@@ -25,7 +25,8 @@ public:
 	static int					pow(const int n, const int exp);			//Power
 	static qword				pow64(const int n, const int exp);			//Power 64bit integer
 	static int					pow_base2(const int n, const int exp);		//Binary power
-	static float				log10(const float n);						//Natual log, sse optimized
+	static float				log10Fast(const float n);					//Log 10
+	static float				log2Fast(const float n);					//Log 2
 	static int					abs(const int n);
 	static float				abs(const float n);
 
