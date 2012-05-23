@@ -151,9 +151,14 @@ rVec2 rVec2::operator+(const rVec2 &vec) const
 	return rVec2(x + vec.x, y + vec.y);
 }
 
-rVec2 rVec2::operator*(const rVec2 &vec) const
+rVec2 operator*(const float val, const rVec2 &vec)
 {
-	return rVec2(x * vec.x, y * vec.y);
+	return rVec2(val * vec.x, val * vec.y);
+}
+
+float rVec2::operator*(const rVec2 &vec) const
+{
+	return x * vec.x + y * vec.y;
 }
 
 rVec2 rVec2::operator/(const rVec2 &vec) const
@@ -373,15 +378,31 @@ rVec3 rVec3::operator+(const rVec3 &vec) const
 	return rVec3(x + vec.x, y + vec.y, z + vec.z);
 }
 
-rVec3 rVec3::operator*(const rVec3 &vec) const
+//This is apparently also needed
+rVec3 operator*(const float val, const rVec3 &vec)
 {
-	return rVec3(x * vec.x, y * vec.y, z * vec.z);
+	return rVec3(val * vec.x, val * vec.y, val * vec.z);
+}
+
+float rVec3::operator*(const rVec3 &vec) const
+{
+	return x * vec.x + y * vec.y + z * vec.z;
 }
 
 rVec3 rVec3::operator/(const rVec3 &vec) const
 {
 	return rVec3(x / vec.x, y / vec.y, z / vec.z);
 }
+
+rVec3& rVec3::operator=(const rVec3 &vec)
+{
+	x = vec.x;
+	y = vec.y;
+	z = vec.z;
+
+	return *this;
+}
+
 
 rVec3& rVec3::operator-=(const rVec3 &vec)
 {

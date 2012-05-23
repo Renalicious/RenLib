@@ -49,7 +49,7 @@ public:
 
 	rVec2		operator-(const rVec2 &vec) const;
 	rVec2		operator+(const rVec2 &vec) const;
-	rVec2		operator*(const rVec2 &vec) const;
+	float		operator*(const rVec2 &vec) const;
 	rVec2		operator/(const rVec2 &vec) const;
 
 	rVec2&		operator-=(const rVec2 &vec);
@@ -104,9 +104,11 @@ public:
 
 	rVec3		operator-(const rVec3 &vec) const;
 	rVec3		operator+(const rVec3 &vec) const;
-	rVec3		operator*(const rVec3 &vec) const;
+	//rVec3		operator*(const rVec3 &vec) const;
+	float		operator*(const rVec3 &vec) const;
 	rVec3		operator/(const rVec3 &vec) const;
 
+	rVec3&		operator=(const rVec3 &vec);		//Required?
 	rVec3&		operator-=(const rVec3 &vec);
 	rVec3&		operator+=(const rVec3 &vec);
 	rVec3&		operator*=(const rVec3 &vec);
@@ -116,6 +118,8 @@ public:
 	rVec3		operator/(const float val) const;
 	rVec3&		operator*=(const float val);
 	rVec3&		operator/=(const float val);
+
+	friend rVec3		operator*(const float val, const rVec3 &vec);
 
 	//Misc
 	void		zero(void);							//Zero vector
