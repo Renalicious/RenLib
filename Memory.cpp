@@ -1,4 +1,9 @@
-
+//---------------------------------------------------------------
+// Name: Ren's memory library
+//
+// This file contains simple assembly optimized memory funcitons
+// similar to what rStr has, but global.
+//---------------------------------------------------------------
 
 #include "Memory.h"
 
@@ -291,6 +296,40 @@ void rMem::r_memcpy_asm(void* dst, void* src, int len)
 }
 
 //--------------------------------------------------------------------
+//--- Set memory of 'dst' to zero
+//--- SSE, faster than scalar assembly for orderd data sets larger than 3MB
+//--------------------------------------------------------------------
+void rMem::r_memzero_sse4K(void* dst, int len)
+{	
+	__asm
+	{	
+		mov		edi, dst
+		mov		eax, len
+
+		pxor	xmm0,xmm0
+		shr		eax,12				//divide by 4096, one page len.
+		
+	align 16
+	outer:
+		prefetchnta	[edi+4096]
+		mov		edx,4096/16			//we handle 4096 bytes per inner loop, each movups handle 16 of those bytes.
+
+	align 16
+	inner:
+			movups	[edi],xmm0		//Need to do movups for better performance
+			movups	[edi+16],xmm0
+			movups	[edi+32],xmm0
+			movups	[edi+48],xmm0
+			add		edi,16*4
+			sub		edx,1*4
+			jnz		inner
+			
+		sub		eax,1
+		jnz		outer
+	}
+}
+
+//--------------------------------------------------------------------
 //--- Set memory of 'dst' to 'c'
 //--- SSE, faster than scalar assembly for orderd data sets larger than 3MB
 //--------------------------------------------------------------------
@@ -307,30 +346,28 @@ void rMem::r_memset_sse4K(void* dst, char c, int len)
 	{	
 		mov		edi, dst
 		mov		eax, len
-		movaps	xmm1, dat
+		movups	xmm1, dat
 
-		pxor	xmm0,xmm0
-		shr		eax,12				;divide by 4096, one page len.
+		//pxor	xmm0,xmm0
+		shr		eax,12				//divide by 4096, one page len.
 		
 	align 16
 	outer:
 		prefetchnta	[edi+4096]
-		mov		edx,4096/16			;we handle 4096 bytes per inner loop, each MOVAPS handle 16 of those bytes.
+		mov		edx,4096/16			//we handle 4096 bytes per inner loop, each movups handle 16 of those bytes.
 
 	align 16
 	inner:
-			movaps	[edi],xmm1
-			movaps	[edi+16],xmm1
-			movaps	[edi+32],xmm1
-			movaps	[edi+48],xmm1
+			movups	[edi],xmm1		//Need to do movups for better performance
+			movups	[edi+16],xmm1
+			movups	[edi+32],xmm1
+			movups	[edi+48],xmm1
 			add		edi,16*4
 			sub		edx,1*4
 			jnz		inner
 			
 		sub		eax,1
 		jnz		outer
-
-		ret
 	}
 }
 
@@ -353,18 +390,18 @@ void rMem::r_memcpy_sse4K(void* dst, void* src, int len)
 	outer:
 		prefetchnta	[edi+4096]
 		prefetchnta	[esi+4096]
-		mov		edx,4096/16			;we handle 4096 bytes per inner loop, each MOVAPS handle 16 of those bytes.
+		mov		edx,4096/16			;we handle 4096 bytes per inner loop, each movups handle 16 of those bytes.
 
 	align 16
 	inner:
-			movaps	xmm1, [esi]
-			movaps	[edi], xmm1
-			movaps	xmm1, [esi+16]
-			movaps	[edi+16], xmm1
-			movaps	xmm1, [esi+32]
-			movaps	[edi+32], xmm1
-			movaps	xmm1, [esi+48]
-			movaps	[edi+48], xmm1
+			movups	xmm1, [esi]
+			movups	[edi], xmm1
+			movups	xmm1, [esi+16]
+			movups	[edi+16], xmm1
+			movups	xmm1, [esi+32]
+			movups	[edi+32], xmm1
+			movups	xmm1, [esi+48]
+			movups	[edi+48], xmm1
 
 			add		edi, 16*4
 			add		esi, 16*4
@@ -373,8 +410,40 @@ void rMem::r_memcpy_sse4K(void* dst, void* src, int len)
 			
 		sub		eax,1
 		jnz		outer
+	}
+}
 
-		ret
+//--------------------------------------------------------------------
+//--- Set memory of 'dst' to zero
+//--- AVX, faster than scalar assembly for orderd data sets larger than 3MB
+//--------------------------------------------------------------------
+void rMem::r_memzero_avx4K(void* dst, int len)
+{	
+	__asm
+	{	
+		mov		edi, dst
+		mov		eax, len
+
+		vsubps	ymm0, ymm1, ymm1
+		shr		eax,12				//divide by 4096, one page len.
+		
+	align 16
+	outer:
+		prefetchnta	[edi+4096]
+		mov		edx,4096/32			//we handle 4096 bytes per inner loop, each movups handle 16 of those bytes.
+
+	align 16
+	inner:
+			vmovups	[edi],ymm0		//Need to do movups for better performance
+			vmovups	[edi+32],ymm0
+			vmovups	[edi+64],ymm0
+			vmovups	[edi+96],ymm0
+			add		edi,32*4
+			sub		edx,1*4
+			jnz		inner
+			
+		sub		eax,1
+		jnz		outer
 	}
 }
 
@@ -405,30 +474,27 @@ void rMem::r_memset_avx4K(void* dst, char c, int len)
 	{	
 		mov		edi, dst
 		mov		eax, len
-		movaps	ymm1, dat
+		vmovups	ymm1, dat
 
-		pxor	ymm0,ymm0
 		shr		eax,12				;divide by 4096, one page len.
 		
 	align 16
 	outer:
 		prefetchnta	[edi+4096]
-		mov		edx,4096/32			;we handle 4096 bytes per inner loop, each MOVAPS handle 32 of those bytes.
+		mov		edx,4096/32			;we handle 4096 bytes per inner loop, each movups handle 32 of those bytes.
 
 	align 16
 	inner:
-			movaps	[edi],ymm1
-			movaps	[edi+32],ymm1
-			movaps	[edi+64],ymm1
-			movaps	[edi+96],ymm1
+			vmovups	[edi],ymm1
+			vmovups	[edi+32],ymm1
+			vmovups	[edi+64],ymm1
+			vmovups	[edi+96],ymm1
 			add		edi,32*4
 			sub		edx,1*4
 			jnz		inner
 			
 		sub		eax,1
 		jnz		outer
-
-		ret
 	}
 }
 
@@ -444,25 +510,24 @@ void rMem::r_memcpy_avx4K(void* dst, void* src, int len)
 		mov		esi, src
 		mov		eax, len
 
-		pxor	ymm0,ymm0
 		shr		eax,12				;divide by 4096, one page len.
 		
 	align 16
 	outer:
 		prefetchnta	[edi+4096]
 		prefetchnta	[esi+4096]
-		mov		edx,4096/32			;we handle 4096 bytes per inner loop, each MOVAPS handle 16 of those bytes.
+		mov		edx,4096/32			;we handle 4096 bytes per inner loop, each movups handle 16 of those bytes.
 
 	align 16
 	inner:
-			movaps	ymm1, [esi]
-			movaps	[edi], ymm1
-			movaps	ymm1, [esi+32]
-			movaps	[edi+32], ymm1
-			movaps	ymm1, [esi+64]
-			movaps	[edi+64], ymm1
-			movaps	ymm1, [esi+96]
-			movaps	[edi+96], ymm1
+			vmovups	ymm1, [esi]
+			vmovups	[edi], ymm1
+			vmovups	ymm1, [esi+32]
+			vmovups	[edi+32], ymm1
+			vmovups	ymm1, [esi+64]
+			vmovups	[edi+64], ymm1
+			vmovups	ymm1, [esi+96]
+			vmovups	[edi+96], ymm1
 
 			add		edi, 32*4
 			add		esi, 32*4
@@ -471,7 +536,5 @@ void rMem::r_memcpy_avx4K(void* dst, void* src, int len)
 			
 		sub		eax,1
 		jnz		outer
-
-		ret
 	}
 }

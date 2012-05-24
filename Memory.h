@@ -27,10 +27,12 @@ public:
 	static void		r_memcpy_asm(void* dst, void* src, int size);
 	
 	//--- SSE assembly
+	static void		r_memzero_sse4K(void* dst, int size);
 	static void		r_memset_sse4K(void* dst, char c, int size);
 	static void		r_memcpy_sse4K(void* dst, void* src, int size);
 	
 	//--- AVX assembly
+	static void		r_memzero_avx4K(void* dst, int size);
 	static void		r_memset_avx4K(void* dst, char c, int size);
 	static void		r_memcpy_avx4K(void* dst, void* src, int size);
 };
