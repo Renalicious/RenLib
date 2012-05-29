@@ -10,7 +10,7 @@
 
 #ifndef _RENSTR_
 #define _RENSTR_
-#define _RENSTR_VER_	"1.0.2"
+#define _RENSTR_VER_	"1.0.3"
 
 #define	ASM
 const int	STR_ALLOC_GRAN = 4;			//4 chars, 32bits scalar
@@ -119,6 +119,7 @@ public:
 	void		stripPath(void);					//rfind "/" or "\\" and delete from 0 to pos
 
 	//--- Returning data, and conversions
+	float		toFloat(const rStr &val);
 	const char*	c_str(void) const;									//Return as char array
 	const char*	intToChar(const signed int n);						//Return int as char array
 	const char*	floatToChar(const float n, const int precision = 8);//Return float or double as rStr
@@ -199,6 +200,7 @@ protected:
 	void		r_memset(char* text, char c, int length);
 	void		r_memcopy(char * dst, const char *src, int length);
 	void		datacopy(const char* text);
+	int			charToInt(const char c);
 };
 
 #endif /* _RENSTR_ */

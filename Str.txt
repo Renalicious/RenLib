@@ -1,4 +1,7 @@
 Changes and versions:
+Version 1.0.3 - May 28 2012:
+	+Added functional string to float converter. It works!! ...at least with the cases I need it to work for :)
+
 Version 1.0.2 - May 17 2012:
 	+Removed preprocessor logic from methods, and put it in memory operation methods instead.
 	This cleans up the code a bit and allows me to define different assembly optimizations

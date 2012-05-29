@@ -1058,6 +1058,143 @@ void rStr::universalReplace(const char* old, const char* nw)
 //--- Return data and conversions
 //-------------------------------------------
 
+float rStr::toFloat(const rStr &inputVal)
+{
+	bool isFraction;
+	int wholeCount, fracCount, inLen;
+	float result;
+	int valueStruct[4] = {0,0,0,0}; //sign, number, exp
+	rStr input = inputVal;
+
+	//--- Check for infinity and not a number
+	if(input.findTextNoCase("nan") >= 0)
+	{
+		static const unsigned long __nan[2] = {0xffffffff, 0x7fffffff};
+        return (*(const float *) __nan);
+	}
+
+	if(input.findTextNoCase("inf") >= 0)
+	{
+		static const int value = 0x7f800000; 
+		return *(float*)&value;
+	}
+
+	//-------------------
+	//--- Validate number
+	//-------------------
+
+	//Check sign and if it's a number
+	if(input[0] == '-' && this->isNumeric(input[1]))
+		valueStruct[0] = 1;
+
+	else if(isNumeric(input[0]))
+		valueStruct[0] = 0;
+
+	else
+	{
+		static const unsigned long __nan[2] = {0xffffffff, 0x7fffffff};
+        return (*(const float *) __nan);
+	}
+
+	//Check for exponent
+	inLen = input.length();
+	if(input.rfind('e') > 0)
+	{
+		//Get single digit exponent
+		valueStruct[3] = charToInt( input[inLen- 1] );
+
+		//Get double digit exponent, or sign
+		if( input.isNumeric( input[inLen - 2] ) )
+			valueStruct[3] += charToInt( input[inLen - 2] ) * 10;
+
+		else if(input[inLen - 2] == '-')
+			valueStruct[3] *= -1;
+		
+		//Get tripple digit exponent, or sign
+		if( input.isNumeric( input[inLen - 3] ) )
+			valueStruct[3] += charToInt( input[inLen - 3] ) * 100;
+
+		else if(input[inLen - 3] == '-')
+			valueStruct[3] *= -1;
+	}
+
+	//Check number
+	wholeCount = 0;
+	fracCount = 0;
+	isFraction = false;
+	for(int i = 0; i < inLen; i++)
+	{
+		if(input.isNumeric(input[i]) && !isFraction)
+		{
+			valueStruct[1] = (valueStruct[1] * 10) + charToInt(input[i]);
+			wholeCount++;
+		}
+
+		else if(input.isNumeric(input[i]) && isFraction)
+		{
+			valueStruct[2] = (valueStruct[2] * 10) + charToInt(input[i]);
+			fracCount++;
+		}
+
+		//If we find the radix, switch to fraction
+		if(input[i] == '.')
+			isFraction = true;
+	}
+
+	//Final reconstruction
+	result = valueStruct[1]; //Whole nums
+	
+	if(fracCount)
+	{
+		float tmp = valueStruct[2];
+		for(int i = 0; i < fracCount; i++)
+			tmp /= 10;
+
+		result += tmp; //Fraction
+	}
+
+	if(valueStruct[0] == 1)
+		result *= -1; //Sign
+
+	//Exponent
+	if(valueStruct[3])
+	{
+		float tmp = 1.0f;
+		if(valueStruct[3] > 0)
+		{
+			for(int i = 0; i <= valueStruct[3]; i++)
+				tmp *= 10;
+
+			result *= tmp;
+		}
+		else
+		{
+			for(int i = 0; i <= valueStruct[3]; i++)
+				tmp /= 10;
+
+			result *= tmp;
+		}
+	}
+
+	//Return result
+	return result;
+}
+
+int rStr::charToInt(const char c)
+{
+	if(c == '1') return 1;
+	else if(c == '2') return 2;
+	else if(c == '3') return 3;
+	else if(c == '4') return 4;
+	else if(c == '5') return 5;
+	else if(c == '6') return 6;
+	else if(c == '7') return 7;
+	else if(c == '8') return 8;
+	else if(c == '9') return 9;
+	else if(c == '0') return 0;
+	else return -1;
+}
+
 //--- Return data as c[] string
 const char* rStr::c_str() const
 {
