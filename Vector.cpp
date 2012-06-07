@@ -110,6 +110,12 @@ float4 rVec2::asFloat4(void) const
 	return res;
 }
 
+float3 rVec2::asFloat3(void) const
+{
+	float3 res = {x, y, 0.0f};
+	return res;
+}
+
 //Misc
 void rVec2::zero(void)
 {
@@ -341,6 +347,12 @@ rVec3 rVec3::truncate(const float max)
 float4 rVec3::asFloat4(void) const
 {
 	float4 res = {x, y, z, 0.0f};
+	return res;
+}
+
+float3 rVec3::asFloat3(void) const
+{
+	float3 res = {x, y, z};
 	return res;
 }
 

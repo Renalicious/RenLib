@@ -22,7 +22,9 @@ public:
 	static float				sqrt(const float n);						//Square root using SSE2
 	static float				rsqrt(const float n);						//Square root using SSE2, fast
 	static float				invSqrt(const float n);						//Fast inverse square
-	static int					pow(const int n, const int exp);			//Power
+	static float				exp(const float n);
+	static float				pow(const float n, const float exp);		//Power, float
+	static int					pow(const int n, const int exp);			//Power, int
 	static qword				pow64(const int n, const int exp);			//Power 64bit integer
 	static int					pow_base2(const int n, const int exp);		//Binary power
 	static float				log10Fast(const float n);					//Log 10
@@ -48,6 +50,8 @@ public:
 	static float				dot_sse(const float4 &v1, const float4 &v2);
 
 	//Constants
+	static const double			E64;
+	static const float			E;
 	static const double			PI64;
 	static const float			PI;
 	static const float			half_PI;

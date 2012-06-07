@@ -46,14 +46,61 @@ float rMath::invSqrt(const float x)
 	return tmp * (1.69000231f - 0.714158168f * x * tmp * tmp);
 }
 
+float rMath::exp(const float n)
+{
+	return pow(E, n);
+}
+
+float rMath::pow(const float base, const float exp)
+{
+	float result, exponent;
+	
+	//--- Assembly can't do negative exponents, so make it positive
+	exponent = rMath::abs(exp);
+	
+	//--- Return 1 if exponent is 0
+	if(exponent == 0)
+		return 1.0f;
+	
+	_asm
+	{
+		fld [exponent]
+		fld [base]
+		fyl2x
+		fld1
+		fld st(1)
+		fprem
+		f2xm1
+		faddp st(1),st(0)
+		fscale;
+		fxch;
+		fstp st(0)
+		fstp [result]
+	}
+	
+	//--- If exponent is negative, return the inverse
+	if(exp < 0)
+		return 1 / result;
+	
+	else
+		return result;
+}
+
 int rMath::pow(const int n, const int exp)
 {
 	int result, exponent;
 
-	for(result = n, exponent = exp; exp > 1; exponent--)
+	for(result = n, exponent = rMath::abs(exp); exponent > 1; exponent--)
 		result *= n;
 	
-	return result;
+	if(exp > 0)
+		return result;
+		
+	else if (exp < 0)
+		return 0;
+		
+	else
+		return 1;
 }
 
 qword rMath::pow64(const int n, const int exp)
@@ -61,10 +108,17 @@ qword rMath::pow64(const int n, const int exp)
 	qword result;
 	int exponent;
 
-	for(result = n, exponent = exp; exp > 1; exponent--)
+	for(result = n, exponent = rMath::abs(exp); exponent > 1; exponent--)
 		result *= n;
 	
-	return result;
+	if(exp > 0)
+		return result;
+		
+	else if (exp < 0)
+		return 0;
+		
+	else
+		return 1;
 }
 
 int rMath::pow_base2(const int n, const int exp)
@@ -342,6 +396,8 @@ float rMath::dot_sse( const float4 &v1, const float4 &v2 )
 }
 
 //Constants
+const double rMath::E64 = 2.718281828459045235360287;
+const float rMath::E = 2.718281828459045235360287f;
 const double rMath::PI64 = 3.1415926535897932384626433832795028841971693993751058;
 const float rMath::PI = 3.1415926535897932384626433832795028841971693993751058f;
 
