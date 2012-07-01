@@ -356,6 +356,52 @@ float3 rVec3::asFloat3(void) const
 	return res;
 }
 
+float3 rVec3::pointToVec(const rVec3 &a)
+{
+	float3 result;
+
+	result.x = x - a.x;
+	result.y = y - a.y;
+	result.z = z - a.z;
+
+	return result;
+}
+
+//--- Front = [0, 1, 0]
+rVec3 rVec3::xyToCubePlane(const float limit, const rVec3 &dir) const
+{
+	//Check direction
+	if(!dir.x && !dir.y && !dir.z)
+		return rVec3(0.0f, 0.0f, 0.0f);
+
+	else
+	{
+		//Front
+		if(dir.x == 0 && dir.y == 1 && dir.z == 0)
+			return rVec3( x, limit, rMath::invAbs(y, limit) );
+
+		//Back
+		else if(dir.x == 0 && dir.y == -1 && dir.z == 0)
+			return rVec3(rMath::invAbs(x, limit), -limit, rMath::invAbs(y, limit));
+
+		//Right
+		else if(dir.x == 1 && dir.y == 0 && dir.z == 0)
+			return rVec3(limit, x, rMath::invAbs(y, limit));
+
+		//Left
+		else if(dir.x == -1 && dir.y == 0 && dir.z == 0)
+			return rVec3(-limit, rMath::invAbs(x, limit), rMath::invAbs(y, limit));
+
+		//Up
+		else if(dir.x == 0 && dir.y == 0 && dir.z == 1)
+			return rVec3(x, y, limit);
+
+		//Down
+		else if(dir.x == 0 && dir.y == 0 && dir.z == -1)
+			return rVec3(x, y, -limit);
+	}
+}
+
 //Misc
 void rVec3::zero(void)
 {

@@ -100,6 +100,10 @@ public:
 	rVec3		truncate(const float max);			//Truncate vector
 	float4		asFloat4(void) const;				//Return float4, useful for dot_sse()
 	float3		asFloat3(void) const;				//Return float4, useful for dot_sse()
+	float3		pointToVec(const rVec3 &a);			//Return new vector from local and a
+
+	//Rotate generic XY coordinates into a specific direction based on the direction
+	rVec3		xyToCubePlane(const float limit, const rVec3 &direction) const;
 
 	//Opperators
 	rVec3		operator-(void) const;				//Same as reverse() + get()
