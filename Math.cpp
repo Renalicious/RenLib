@@ -53,10 +53,11 @@ float rMath::exp(const float n)
 
 float rMath::pow(const float base, const float exp)
 {
-	float result, exponent;
+	float result, exponent, b;
 	
-	//--- Assembly can't do negative exponents, so make it positive
+	//--- Assembly can't do negative exponents or bases, so make it positive
 	exponent = rMath::abs(exp);
+	b = rMath::abs(base);
 	
 	//--- Return 1 if exponent is 0
 	if(exponent == 0)
@@ -65,7 +66,7 @@ float rMath::pow(const float base, const float exp)
 	_asm
 	{
 		fld [exponent]
-		fld [base]
+		fld [b]
 		fyl2x
 		fld1
 		fld st(1)
@@ -80,10 +81,20 @@ float rMath::pow(const float base, const float exp)
 	
 	//--- If exponent is negative, return the inverse
 	if(exp < 0)
-		return 1 / result;
+	{
+		if(base < 0)
+			return -1 / result;
+		else
+			return 1 / result;
+	}
 	
 	else
-		return result;
+	{
+		if(base < 0)
+			return -result;
+		else
+			return result;
+	}
 }
 
 int rMath::pow(const int n, const int exp)
@@ -221,7 +232,7 @@ float rMath::RoundToInt(const float val)
 
 int rMath::invAbs(const int n, const int limit)
 {
-	return abs(limit - n);
+	return limit - n;
 }
 
 //---------------------------------------------------------------
@@ -393,6 +404,77 @@ float rMath::dot_sse( const float4 &v1, const float4 &v2 )
 	}
 #endif
 	return result;
+}
+
+float rMath::pointsTheta3d(const float3 &start, const float3 &p1, const float3 &p2)
+{
+	//--- Variables
+	float4 s, e1, e2;
+	float theta;
+
+	s.x = s.y = s.z = s.w = 0.0f;
+	e1 = e2 = s;
+
+	s.x = start.x; s.y = start.y; s.z = start.z;
+	e1.x = p1.x; e1.y = p1.y; e1.z = p1.z;
+	e2.x = p2.x; e2.y = p2.y; e2.z = p2.z;
+
+	//--- Get vectors 1 and 2
+	__asm
+	{
+		//Move variables into registers
+		movaps	xmm1, s
+		movaps	xmm2, xmm1
+		//movaps	xmm1, e1
+		//movaps	xmm2, e2
+
+		//Create v1 and v2
+		subps	xmm1, e1
+		subps	xmm2, e2
+
+		//DOT from v1 and v2 (store in xmm6)
+		movaps	xmm5, xmm1 //make a copy to not destroy vector
+		mulps	xmm5, xmm2
+
+		movaps	xmm6, xmm5
+		haddps	xmm6, xmm6
+		haddps	xmm6, xmm6
+
+		//LENGTH from v1 and v2 (store in xmm7)
+		//sqrt((a.x * a.x) + (a.y * a.y) + (a.z * a.z)) * sqrt((b.x * b.x) + (b.y * b.y) + (b.z * b.z))
+		mulps	xmm1, xmm1
+		mulps	xmm2, xmm2
+
+		haddps	xmm1, xmm1
+		haddps	xmm1, xmm1
+
+		haddps	xmm2, xmm2
+		haddps	xmm2, xmm2
+
+		sqrtss	xmm1, xmm1
+		sqrtss	xmm2, xmm2
+
+		mulss	xmm1, xmm2
+		movss	xmm7, xmm1
+
+		//Compute theta
+		divss	xmm6, xmm7
+		movss	theta, xmm6
+	}
+
+	//--- Return
+	return theta;
+}
+
+float rMath::vectorTheta3d(const float3 &a, const float3 &b)
+{
+	float dot, length, theta;
+
+	dot = a.x * b.x + a.y * b.y + a.z * b.z;
+	length = sqrt((a.x * a.x) + (a.y * a.y) + (a.z * a.z)) * sqrt((b.x * b.x) + (b.y * b.y) + (b.z * b.z));
+	theta = dot / length;
+
+	return theta;
 }
 
 //Constants

@@ -49,6 +49,9 @@ public:
 	static float				dot3d(const float3 &v1, const float3 &v2);
 	static float				dot_sse(const float4 &v1, const float4 &v2);
 
+	static float				pointsTheta3d(const float3 &start, const float3 &p1, const float3 &p2);
+	static float				vectorTheta3d(const float3 &v1, const float3 &v2);
+
 	//Constants
 	static const double			E64;
 	static const float			E;
