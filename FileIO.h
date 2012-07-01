@@ -17,6 +17,8 @@
 */
 
 #include <stdio.h>
+#include "dds.h"
+#include "Memory.h"
 
 #ifndef _RENFILE_
 #define _RENFILE_
@@ -36,6 +38,7 @@ struct rFileName
 	int		pLen;
 };
 
+//--- File class
 class rFile
 {
 public:
@@ -77,5 +80,39 @@ protected:
 	unsigned long		dataLen;					//Max 4GB
 
 	void				init(void);
+};
+
+//--- Subclass for DDS files
+class rFileDDS : public rFile
+{
+public:
+						rFileDDS();
+
+	//Set properties
+	void				setDDSPixelFormat(const DWORD size,
+										const DWORD flags,
+										const DWORD FourCC,
+										const DWORD RGBBitCount,
+										const DWORD rMask,
+										const DWORD gMask,
+										const DWORD bMask,
+										const DWORD aMask);
+
+	void				setDDSHeader(const DWORD size,
+									const DWORD flags,
+									const DWORD height,
+									const DWORD width,
+									const DWORD pitch,
+									const DWORD depth,
+									const DWORD mipCount);
+	 
+	//Write
+	bool				writeDDS(const void *data);
+
+private:
+	DDS_PIXELFORMAT		ddsPX;
+	DDS_HEADER			ddsHead;
+
+	unsigned char		DDS_Ident[4]; //This needs to be here in the CPP file
 };
 #endif

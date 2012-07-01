@@ -11,9 +11,9 @@
 //---------------------------------------------------------------
 #include "FileIO.h"
 
-//-------------------------------------------
-//--- Constructors
-//-------------------------------------------
+//---------------------------------------------------------------
+//--- rFile Constructors
+//---------------------------------------------------------------
 rFile::rFile(void)
 {
 	init();
@@ -304,6 +304,86 @@ bool rFile::writeAppend(const char* data)
 
 		fopen_s(&fp, getFull(), "ab+");
 		fwrite(data, typeSize, dataLen / typeSize, fp);
+		fclose(fp);
+
+		return true;
+	}
+}
+
+//---------------------------------------------------------------
+//--- rFileDDS
+//---------------------------------------------------------------
+
+rFileDDS::rFileDDS(void)
+{
+	DDS_Ident[0] = 0x44;
+	DDS_Ident[1] = 0x44;
+	DDS_Ident[2] = 0x53;
+	DDS_Ident[3] = 0x20;
+
+	rMem::r_memset_asm(&ddsPX, 0,  sizeof(DWORD) * 8);
+	rMem::r_memset_asm(&ddsHead, 0,  sizeof(DWORD) * 31);
+}
+
+void rFileDDS::setDDSPixelFormat(const DWORD size,
+										const DWORD flags,
+										const DWORD FourCC,
+										const DWORD RGBBitCount,
+										const DWORD rMask,
+										const DWORD gMask,
+										const DWORD bMask,
+										const DWORD aMask)
+{
+	ddsPX.dwSize = size;
+	ddsPX.dwFlags = flags;
+	ddsPX.dwFourCC = FourCC;
+	ddsPX.dwRGBBitCount = RGBBitCount;
+	ddsPX.dwRBitMask = rMask;
+	ddsPX.dwGBitMask = gMask;
+	ddsPX.dwBBitMask = bMask;
+	ddsPX.dwABitMask = aMask;
+}
+
+void rFileDDS::setDDSHeader(const DWORD size,
+									const DWORD flags,
+									const DWORD height,
+									const DWORD width,
+									const DWORD pitch,
+									const DWORD depth,
+									const DWORD mipCount)
+{
+	ddsHead.dwSize = size;
+	ddsHead.dwFlags = flags;
+	ddsHead.dwHeight = height;
+	ddsHead.dwWidth = width;
+	ddsHead.dwPitchOrLinearSize = pitch;
+	ddsHead.dwDepth = depth;
+	ddsHead.dwMipMapCount = mipCount;
+}
+
+//--- Write data and headers
+bool rFileDDS::writeDDS(const void *data)
+{
+	//File name errors
+	if(!fileName.nLen || !fileName.pLen)
+		return false;
+
+	//DDS errors
+	if(!ddsHead.dwHeight || !ddsHead.dwWidth || !ddsHead.dwPitchOrLinearSize)
+		return false;
+
+	else
+	{
+		FILE *fp;
+		ddsHead.ddspf = ddsPX;
+
+		fopen_s(&fp, getFull(), "wb");
+		
+		//Write headers and data
+		fwrite(DDS_Ident, sizeof(DDS_Ident), 1, fp);
+		fwrite(&ddsHead, sizeof(DWORD), 31, fp);
+		fwrite(data, sizeof(data), sizeof(data) * ddsHead.dwHeight * ddsHead.dwWidth, fp);
+
 		fclose(fp);
 
 		return true;
