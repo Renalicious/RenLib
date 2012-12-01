@@ -19,6 +19,8 @@ rFile::rFile(void)
 	init();
 	typeSize = 0;
 	dataLen = 0;
+	clearPath();
+	clearName();
 }
 
 rFile::rFile(const char* path, const char* name)
@@ -72,7 +74,7 @@ void rFile::init(void)
 bool rFile::fileExists(void)
 {
 	//Make sure we have a path and file name
-	if(!fileName.nLen || !fileName.pLen)
+	if((!fileName.nLen && !fileName.pLen) || !fileName.nLen)
 		return false;
 
 	else
@@ -180,8 +182,12 @@ const char* rFile::getFull(void) const
 		p++;
 	}
 
-	f[i] = '/';
-	i++;
+	//If we're just using the name, without a path, don't add the directory slash
+	if(p)
+	{
+		f[i] = '\\';
+		i++;
+	}
 
 	while(n < fileName.nLen)
 	{
@@ -244,7 +250,7 @@ const unsigned long rFile::getLength(void) const
 char* rFile::readAll(void)
 {
 	//Make sure we have a path and file name
-	if(!fileName.nLen || !fileName.pLen)
+	if((!fileName.nLen && !fileName.pLen) || !fileName.nLen)
 		return NULL;
 
 	if(!fileExists())
