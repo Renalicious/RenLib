@@ -185,7 +185,7 @@ int rStr::r_strlen_asm(const char *src)
 	/* Reference: http://www.int80h.org/strlen/ */
 
 	//Don't bother counting if we're null
-	if(!src)
+	if(!src || src[0] == '\0')
 		return 0;
 
 	int i = 0;

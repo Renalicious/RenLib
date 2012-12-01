@@ -765,7 +765,7 @@ void rStr::append(const char c)
 
 void rStr::append(const char* text)
 {
-	if(text)
+	if(text[0] != '\0')
 	{
 		int textLength;
 		int newLength;
@@ -1267,6 +1267,18 @@ rStr* rStr::split(const char* text, const char token, int *_num)
 				else
 				{
 					r_memcopy(tempText, text + lastPos, chunkLength - 1);
+
+					//When reading from a text file and chunking based on newlines, the last chunk might cause issues
+					//Putting this here to see if I can catch null characters
+					for(int curChar = 0; curChar < chunkLength; curChar++)
+					{
+						if(tempText[curChar] <= 0)
+						{
+							chunkLength = curChar;
+							break;
+						}
+					}
+
 					tempText[chunkLength] = '\0';
 					result[curCount].append(tempText);
 				}
@@ -1574,8 +1586,8 @@ void rStr::operator=(const char* text)
 
 	l = r_strlen(text);
 	ensureAlloced(l + 1, false);
-	datacopy(text); //Keeping this here until I figure out why the assembly version causes heap errors
-	
+	rStr::r_memcopy_asm(data, text, l);
+
 	len = l;
 }
 
