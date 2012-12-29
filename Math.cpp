@@ -30,11 +30,21 @@ float rMath::rsqrt(const float num)
 {
 	__asm
 	{
-		rsqrtss		xmm0, num
+		movss		xmm0, num
+		rsqrtss		xmm1, xmm0
+		mulss		xmm0, xmm1
 		movss		num, xmm0
 	}
 
 	return num;
+}
+
+float rMath::rsqrt_safe(const float num)
+{
+	if(num == 0)
+		return 0;
+	else
+		return rsqrt(num);
 }
 
 //Fast inverse squareroot

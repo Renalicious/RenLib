@@ -21,6 +21,7 @@ class rMath
 public:
 	static float				sqrt(const float n);						//Square root using SSE2
 	static float				rsqrt(const float n);						//Square root using SSE2, fast
+	static float				rsqrt_safe(const float n);					//Square root using SSE2, fast, n = 0 return 0
 	static float				invSqrt(const float n);						//Fast inverse square
 	static float				exp(const float n);
 	static float				pow(const float n, const float exp);		//Power, float
